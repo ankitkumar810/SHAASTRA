@@ -1,4 +1,4 @@
-# RakshaSetu — Person A deliverable (Shelter & Map Module)
+# SHAASTRA — Person A deliverable (Shelter & Map Module)
 
 This is everything checked off for **Person A** in the task-split doc: endpoints
 #1–5, the seed script, and the `/`, `/shelters`, `/shelters/:id` pages, plus
