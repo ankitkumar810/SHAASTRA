@@ -1,0 +1,16 @@
+{
+  "name": "shaastra-registry",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "install:backend": "npm --prefix database install",
+    "install:frontend": "npm --prefix frontend_C install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "dev:backend": "npm --prefix database run dev",
+    "dev:frontend": "npm --prefix frontend_C run dev",
+    "dev": "npx concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
