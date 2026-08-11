@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import api from '../api'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -16,23 +17,12 @@ export default function Login() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:4000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
+      const response = await api.post('/auth/login', {
+        username,
+        password,
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.error || 'Login failed')
-        return
-      }
+      const data = response.data
 
       // Store authentication data
       localStorage.setItem('token', data.token)
@@ -46,8 +36,12 @@ export default function Login() {
       } else {
         navigate('/')
       }
-    } catch {
-      setError('Unable to connect to the server')
+    } catch (error) {
+      if (error.response) {
+        setError(error.response.data?.error || 'Login failed')
+      } else {
+        setError('Unable to connect to the server')
+      }
     } finally {
       setLoading(false)
     }
