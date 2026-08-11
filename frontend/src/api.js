@@ -1,25 +1,20 @@
-// frontend/src/api.js
-
-import axios from "axios";
+import axios from 'axios'
 
 const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE_URL ||
-    "https://shaastra-3h7h.vercel.app/api",
-});
+  baseURL: 'https://shaastra.onrender.com/api',
+})
 
-// Attach JWT to every API request when available.
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token')
 
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
 
-    return config;
+    return config
   },
   (error) => Promise.reject(error)
-);
+)
 
-export default api;
+export default api
