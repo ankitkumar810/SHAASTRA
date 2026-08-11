@@ -1,9 +1,16 @@
 // src/api.js
 // Shared Axios instance for the entire frontend.
+//
+// Authentication:
+// - Login.jsx stores the JWT in localStorage as "token".
+// - This interceptor automatically attaches that JWT to API requests.
+// - Protected backend routes can therefore read:
+//     Authorization: Bearer <token>
 
 import axios from 'axios'
 
 const api = axios.create({
+  // Vercel rewrites /api/* requests to the backend service.
   baseURL: '/api',
 })
 
