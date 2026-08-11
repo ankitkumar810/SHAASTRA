@@ -1,13 +1,11 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "services": {
     "frontend": {
-      "root": "frontend/",
+      "root": "frontend",
       "framework": "vite"
     },
     "backend": {
-      "root": "backend/",
-      "entrypoint": "index.js"
+      "root": "backend"
     }
   },
   "rewrites": [
@@ -19,7 +17,42 @@
       }
     },
     {
-      "source": "/(.*)",
+      "source": "/login",
+      "destination": {
+        "type": "service",
+        "service": "frontend"
+      }
+    },
+    {
+      "source": "/list",
+      "destination": {
+        "type": "service",
+        "service": "frontend"
+      }
+    },
+    {
+      "source": "/map",
+      "destination": {
+        "type": "service",
+        "service": "frontend"
+      }
+    },
+    {
+      "source": "/find-someone",
+      "destination": {
+        "type": "service",
+        "service": "frontend"
+      }
+    },
+    {
+      "source": "/report-safe",
+      "destination": {
+        "type": "service",
+        "service": "frontend"
+      }
+    },
+    {
+      "source": "/",
       "destination": {
         "type": "service",
         "service": "frontend"
