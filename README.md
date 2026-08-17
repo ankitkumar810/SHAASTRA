@@ -5,6 +5,7 @@ This is everything checked off for **Person A** in the task-split doc: endpoints
 the shared base files (`db.js`, `index.js`, `App.jsx`) that the doc says
 Person A establishes since A merges first.
 
+---
 ## What's actually been verified, and what hasn't
 
 Be clear-eyed about this before a live demo:
