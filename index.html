@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b5269" />
+    <title>SHAASTRA | Disaster response, together</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#home" aria-label="SHAASTRA home"><span class="brand-mark">S</span><span>SHAASTRA<small>Disaster response</small></span></a>
+        <nav aria-label="Main navigation">
+          <button class="nav-item active" data-view="home"><span>⌂</span> Overview</button>
+          <button class="nav-item" data-view="shelters"><span>⌖</span> Find a shelter</button>
+          <button class="nav-item" data-view="family"><span>♡</span> Family reconnect</button>
+          <button class="nav-item" data-view="dashboard"><span>▦</span> Authority dashboard</button>
+        </nav>
+        <div class="sidebar-foot"><span class="live-dot"></span> Live demo data<br><small>Last sync: just now</small></div>
+      </aside>
+      <main>
+        <header class="topbar">
+          <button class="mobile-menu" aria-label="Open menu">☰</button>
+          <div class="incident"><span class="incident-dot"></span><span><strong>Kerala Flood Response</strong><small>Ernakulam district · Moderate alert</small></span></div>
+          <div class="top-actions"><button class="icon-button" aria-label="Language">अ</button><button class="emergency" data-action="emergency">Emergency help <b>112</b></button></div>
+        </header>
+
+        <section id="home" class="view active">
+          <div class="hero">
+            <div><p class="eyebrow">ONE PLACE. REAL-TIME SUPPORT.</p><h1>Help arrives faster<br>when everyone is <em>connected.</em></h1><p class="lead">Find safe shelter, let loved ones know you are safe, and keep relief teams informed.</p><div class="hero-actions"><button class="button primary" data-go="shelters">Find nearby shelter <span>→</span></button><button class="button secondary" data-go="family">Reconnect with family</button></div></div>
+            <div class="hero-visual"><div class="signal-card"><span class="pulse"></span><b>Response network active</b><small>14 shelters updating in real time</small></div><div class="map-shape"><i class="pin pin-a">⌖</i><i class="pin pin-b">⌖</i><i class="pin pin-c">⌖</i><span class="route"></span></div></div>
+          </div>
+          <div class="quick-grid">
+            <article class="quick-card teal"><span class="card-icon">⌂</span><div><strong id="availableBeds">248</strong><small>safe beds available nearby</small></div><button data-go="shelters">View shelters →</button></article>
+            <article class="quick-card amber"><span class="card-icon">♡</span><div><strong>2,184</strong><small>people marked safe today</small></div><button data-go="family">Find someone →</button></article>
+            <article class="quick-card coral"><span class="card-icon">⚑</span><div><strong>3</strong><small>resource alerts need attention</small></div><button data-go="dashboard">See alerts →</button></article>
+          </div>
+          <section class="section"><div class="section-heading"><div><p class="eyebrow">LIVE STATUS</p><h2>Nearby shelters</h2></div><button class="text-link" data-go="shelters">Explore all shelters →</button></div><div id="featuredShelters" class="shelter-grid"></div></section>
+        </section>
+
+        <section id="shelters" class="view">
+          <div class="page-heading"><p class="eyebrow">SHELTER MANAGEMENT</p><h1>Find a safe place, <em>nearby.</em></h1><p>Live availability from verified relief centres in Ernakulam.</p></div>
+          <div class="filter-bar"><label class="search"><span>⌕</span><input id="shelterSearch" placeholder="Search by shelter or area" /></label><select id="capacityFilter"><option value="all">Any availability</option><option value="available">Beds available</option><option value="limited">Limited space</option></select><button class="button secondary compact" id="sortDistance">⌖ Nearest first</button></div>
+          <div class="shelter-layout"><div id="shelterList" class="shelter-list"></div><div class="map-panel"><div class="map-label"><span class="live-dot"></span> Live shelter map</div><div class="map-road r1"></div><div class="map-road r2"></div><div class="map-road r3"></div><button class="map-marker marker-1" data-shelter="0">72</button><button class="map-marker marker-2 warning" data-shelter="1">18</button><button class="map-marker marker-3" data-shelter="2">94</button><button class="map-marker marker-4 critical" data-shelter="3">0</button><div class="map-legend">● Beds available &nbsp; <span>● Limited</span></div></div></div>
+        </section>
+
+        <section id="family" class="view">
+          <div class="page-heading family-title"><p class="eyebrow">FAMILY RECONNECTION</p><h1>Every person deserves<br>to be <em>found.</em></h1><p>Use verified shelter records to let family know you are safe or search for a loved one.</p></div>
+          <div class="reconnect-tabs"><button class="tab active" data-tab="safe">I'm safe</button><button class="tab" data-tab="looking">Looking for someone</button></div>
+          <div class="reconnect-content"><div id="safe" class="tab-panel active"><div class="form-intro"><span class="large-icon safe-icon">✓</span><div><h2>Let your people breathe easy.</h2><p>Your status is shared with verified family searches. You can update or remove it anytime.</p></div></div><form id="safeForm" class="form-card"><label>Full name<input required name="name" placeholder="e.g. Ananya Nair" /></label><div class="form-row"><label>Mobile number<input required name="phone" inputmode="tel" placeholder="10-digit number" /></label><label>Current shelter<select name="shelter"><option>St. Teresa's Relief Centre</option><option>Kalamassery Community Hall</option><option>Aluva Town Hall</option><option>Not at a shelter</option></select></label></div><label>Message for family <input name="message" placeholder="e.g. I am with my sister and safe." /></label><button class="button primary" type="submit">Mark me safe <span>→</span></button></form></div>
+            <div id="looking" class="tab-panel"><div class="form-intro"><span class="large-icon looking-icon">⌕</span><div><h2>Search the safe registry.</h2><p>We only show verified matches, with the shelter recorded by the person or shelter administrator.</p></div></div><form id="searchPersonForm" class="form-card inline-form"><label>Name of person<input required name="name" placeholder="Enter full or first name" /></label><button class="button primary" type="submit">Search registry</button></form><div id="searchResults" class="search-results"><p class="empty-state">Start with a name to search the verified registry.</p></div></div></div>
+          <div class="privacy-note">🔒 Your contact details are never public. A confirmed match unlocks a protected callback request.</div>
+        </section>
+
+        <section id="dashboard" class="view">
+          <div class="dashboard-head"><div class="page-heading"><p class="eyebrow">DISTRICT COMMAND CENTRE</p><h1>Response at a glance.</h1><p>Operational overview for Ernakulam district.</p></div><button class="button primary" id="simulateUpdate">Simulate live update</button></div>
+          <div class="metrics"><article><span>ACTIVE SHELTERS</span><strong>14</strong><small class="positive">↑ 2 opened today</small></article><article><span>TOTAL OCCUPANCY</span><strong id="occupancyMetric">1,286</strong><small>of 1,534 capacity</small></article><article><span>AVAILABLE BEDS</span><strong id="bedsMetric">248</strong><small class="positive">16.2% district capacity</small></article><article><span>SAFE REGISTRATIONS</span><strong id="safeMetric">2,184</strong><small class="positive">↑ 148 in last hour</small></article></div>
+          <div class="dashboard-grid"><section class="dash-card alerts"><div class="card-title"><h2>Attention needed</h2><span class="badge">3 alerts</span></div><div id="alertsList"></div></section><section class="dash-card"><div class="card-title"><h2>Occupancy by zone</h2><span class="muted">Live</span></div><div class="zone-chart"><div><span>Aluva</span><i><b style="width:82%"></b></i><strong>82%</strong></div><div><span>Kochi</span><i><b style="width:67%"></b></i><strong>67%</strong></div><div><span>Kalamassery</span><i><b style="width:53%"></b></i><strong>53%</strong></div><div><span>North Paravur</span><i><b style="width:38%"></b></i><strong>38%</strong></div></div></section><section class="dash-card wide"><div class="card-title"><h2>Recent activity</h2><button class="text-link">View log →</button></div><div id="activityList" class="activity-list"></div></section></div>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

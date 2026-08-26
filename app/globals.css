@@ -1,0 +1,5 @@
+@import "../styles.css";
+
+html { background: #f7fbfa; }
+
+button, input, select { font: inherit; }
