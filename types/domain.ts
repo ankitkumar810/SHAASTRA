@@ -16,6 +16,11 @@ export interface SafeRecord {
   name: string;
   shelter: string;
   message: string;
+  phone?: string;
+  photoUrl?: string;
+  verificationStatus?: "VERIFIED_SAFE" | "PENDING_VERIFICATION" | "REJECTED";
+  verifiedBy?: string;
+  createdAt?: string;
 }
 
 export interface AlertItem {

@@ -1,0 +1,304 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CITIZEN
+  SHELTER_ADMIN
+  DISTRICT_AUTHORITY
+  SYSTEM_ADMIN
+}
+
+enum ShelterStatus {
+  OPEN
+  LIMITED
+  FULL
+  CLOSED
+}
+
+enum ReportStatus {
+  RECEIVED
+  REVIEWED
+  VERIFIED
+  ACTIONED
+  CLOSED
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum AlertStatus {
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ReconnectionStatus {
+  PENDING
+  MATCHED
+  APPROVED
+  REJECTED
+}
+
+model District {
+  id              String           @id @default(cuid())
+  name            String           @unique
+  state           String
+  zones           Zone[]
+  profiles        Profile[]
+  shelters        Shelter[]
+  disasterReports DisasterReport[]
+  alerts          Alert[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([name])
+}
+
+model Zone {
+  id              String           @id @default(cuid())
+  name            String
+  districtId      String
+  district        District         @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  shelters        Shelter[]
+  disasterReports DisasterReport[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([districtId, name])
+  @@index([districtId])
+}
+
+model Profile {
+  id                 String             @id @default(cuid())
+  email              String?            @unique
+  fullName           String
+  phone              String?
+  role               Role               @default(CITIZEN)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  districtId         String?
+  district           District?          @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  shelterId          String?
+  shelter            Shelter?           @relation("ShelterAdmins", fields: [shelterId], references: [id], onDelete: SetNull)
+  
+  shelterUpdates       ShelterUpdate[]
+  safeRecords          SafeRecord[]         @relation("UserSafeRecords")
+  submittedReports     DisasterReport[]     @relation("SubmittedReports")
+  reviewedReports      DisasterReport[]     @relation("ReviewedReports")
+  reconnectionRequests ReconnectionRequest[] @relation("UserReconnectionRequests")
+  assignedAlerts       Alert[]              @relation("AssignedAlerts")
+  auditLogs            AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@index([districtId])
+  @@index([shelterId])
+}
+
+model Shelter {
+  id                  String               @id @default(cuid())
+  name                String
+  locality            String
+  districtId          String
+  district            District             @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  zoneId              String?
+  zone                Zone?                @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  latitude            Float?
+  longitude           Float?
+  address             String
+  totalBeds           Int
+  occupiedBeds        Int                  @default(0)
+  availableBeds       Int
+  foodStockStatus     String
+  medicineStockStatus String
+  waterStockStatus    String?
+  status              ShelterStatus        @default(OPEN)
+  lastUpdated         DateTime             @default(now())
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  assignedAdmins      Profile[]            @relation("ShelterAdmins")
+  inventories         ShelterInventory[]
+  updates             ShelterUpdate[]
+  safeRecords         SafeRecord[]
+  alerts              Alert[]
+  resourcePredictions ResourcePrediction[]
+
+  @@index([districtId])
+  @@index([zoneId])
+  @@index([status])
+}
+
+model ShelterInventory {
+  id             String   @id @default(cuid())
+  shelterId      String
+  shelter        Shelter  @relation(fields: [shelterId], references: [id], onDelete: Cascade)
+  foodDays       Float
+  medicineStatus String
+  waterDays      Float?
+  notes          String?
+  recordedAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@index([shelterId])
+  @@index([recordedAt])
+}
+
+model ShelterUpdate {
+  id                  String        @id @default(cuid())
+  shelterId           String
+  shelter             Shelter       @relation(fields: [shelterId], references: [id], onDelete: Cascade)
+  updatedById         String
+  updatedBy           Profile       @relation(fields: [updatedById], references: [id], onDelete: Cascade)
+  occupiedBeds        Int
+  availableBeds       Int
+  foodStockStatus     String
+  medicineStockStatus String
+  status              ShelterStatus
+  notes               String?
+  createdAt           DateTime      @default(now())
+
+  @@index([shelterId])
+  @@index([updatedById])
+  @@index([createdAt])
+}
+
+model SafeRecord {
+  id                 String               @id @default(cuid())
+  fullName           String
+  phone              String?
+  shelterId          String?
+  shelter            Shelter?             @relation(fields: [shelterId], references: [id], onDelete: SetNull)
+  generalLocation    String?
+  message            String?
+  isPrivate          Boolean              @default(true)
+  verificationStatus VerificationStatus   @default(PENDING)
+  registeredById     String?
+  registeredBy       Profile?             @relation("UserSafeRecords", fields: [registeredById], references: [id], onDelete: SetNull)
+  reconnections      ReconnectionRequest[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@index([fullName])
+  @@index([shelterId])
+  @@index([phone])
+}
+
+model ReconnectionRequest {
+  id              String             @id @default(cuid())
+  requesterId     String?
+  requester       Profile?           @relation("UserReconnectionRequests", fields: [requesterId], references: [id], onDelete: SetNull)
+  requesterName   String
+  requesterContact String
+  targetName      String
+  targetDetails   String?
+  status          ReconnectionStatus @default(PENDING)
+  matchedRecordId String?
+  matchedRecord   SafeRecord?        @relation(fields: [matchedRecordId], references: [id], onDelete: SetNull)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([targetName])
+  @@index([requesterId])
+  @@index([status])
+}
+
+model DisasterReport {
+  id               String       @id @default(cuid())
+  reporterId       String?
+  reporter         Profile?     @relation("SubmittedReports", fields: [reporterId], references: [id], onDelete: SetNull)
+  reporterName     String?
+  reporterContact  String?
+  hazardType       String
+  description      String
+  districtId       String
+  district         District     @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  zoneId           String?
+  zone             Zone?        @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  latitude         Float?
+  longitude        Float?
+  locationName     String
+  evidenceUrl      String?
+  status           ReportStatus @default(RECEIVED)
+  reviewedById     String?
+  reviewedBy       Profile?     @relation("ReviewedReports", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt       DateTime?
+  reviewNotes      String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([districtId])
+  @@index([zoneId])
+  @@index([status])
+  @@index([hazardType])
+}
+
+model Alert {
+  id          String        @id @default(cuid())
+  shelterId   String?
+  shelter     Shelter?      @relation(fields: [shelterId], references: [id], onDelete: Cascade)
+  districtId  String?
+  district    District?     @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  icon        String        @default("⚠")
+  title       String
+  description String
+  severity    AlertSeverity @default(WARNING)
+  status      AlertStatus   @default(ACTIVE)
+  assigneeId  String?
+  assignee    Profile?      @relation("AssignedAlerts", fields: [assigneeId], references: [id], onDelete: SetNull)
+  resolvedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([shelterId])
+  @@index([districtId])
+  @@index([status])
+  @@index([severity])
+}
+
+model ResourcePrediction {
+  id                   String   @id @default(cuid())
+  shelterId            String
+  shelter              Shelter  @relation(fields: [shelterId], references: [id], onDelete: Cascade)
+  predictionType       String
+  predictedShortageAt  DateTime
+  confidenceScore      Float
+  explanation          String
+  createdAt            DateTime @default(now())
+
+  @@index([shelterId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      Profile? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}

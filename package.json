@@ -7,11 +7,19 @@
     "build": "node scripts/run-next.mjs build --webpack",
     "start": "node scripts/run-next.mjs start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
     "@next/swc-wasm-nodejs": "^16.0.10",
+    "@prisma/client": "^6.4.1",
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.112.4",
     "@swc/helpers": "^0.5.15",
+    "@types/leaflet": "^1.9.22",
+    "leaflet": "^1.9.4",
     "next": "16.0.10",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -26,6 +34,8 @@
     "@typescript-eslint/typescript-estree": "^8.68.0",
     "eslint": "9.39.1",
     "eslint-config-next": "16.0.10",
+    "prisma": "^6.4.1",
+    "tsx": "^4.19.3",
     "typescript": "5.9.3"
   }
 }

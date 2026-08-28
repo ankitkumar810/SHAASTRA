@@ -1,0 +1,286 @@
+"use client";
+
+import { createContext, useContext, useState, ReactNode } from "react";
+
+export type Language = "en" | "hi";
+
+const translations: Record<Language, Record<string, string>> = {
+  en: {
+    brandName: "SHAASTRA",
+    tagline: "REAL-TIME • RELIABLE • RESILIENT",
+    heroHeadline: "When disaster strikes, every second matters.",
+    heroSubtext: "SHAASTRA connects people, shelters, families and response teams through one resilient emergency-response network.",
+    citizenPortal: "Citizen Portal",
+    shelterAdmin: "Shelter Admin",
+    districtCommand: "District Command",
+    systemAdmin: "System Admin",
+    signOut: "Sign Out",
+    signIn: "Sign In",
+    overview: "Overview",
+    shelterDiscovery: "Shelter Discovery",
+    findShelter: "Find Nearby Shelter",
+    findSafeShelter: "Find a Safe Shelter",
+    familyReconnection: "Family Reconnection",
+    imSafeFindSomeone: "I'm Safe / Find Someone",
+    reportHazard: "Report Hazard",
+    emergencyHelpline: "National Emergency Helpline 112",
+    call112: "Call 112",
+    aiAssistant: "AI Emergency Assistant",
+    offlineMode: "Offline Mode — Cached Info Active",
+    online: "Online",
+    offline: "Offline",
+    syncing: "Syncing...",
+    pending: "Pending",
+    attentionNeeded: "Attention Needed",
+    activeAlerts: "Active Alerts",
+    activeShelters: "Active Shelters",
+    availableBeds: "Available Beds",
+    safeRegistrations: "Safe Registrations",
+    acrossDistrict: "Across Ernakulam District",
+    liveBedCapacity: "Live Bed Capacity",
+    peopleMarkedSafe: "People Marked Safe",
+    requiringAttention: "Requiring Attention",
+    howTransformsHeading: "How SHAASTRA transforms emergency response",
+    workflowSubtitle: "CONNECTED RESPONSE WORKFLOW",
+    card1Title: "FIND SAFETY",
+    card1Desc: "Live shelter availability and maps help people find a safe place quickly.",
+    card2Title: "RECONNECT",
+    card2Desc: "Verified safety updates help families know their loved ones are safe.",
+    card3Title: "COORDINATE",
+    card3Desc: "Live operational data helps response teams coordinate shelters and resources.",
+    card4Title: "STAY CONNECTED",
+    card4Desc: "Offline and SMS resilience keeps critical information moving when connectivity fails.",
+    spatialHeading: "See the response network in action",
+    spatialSubtext: "Real-time interactive spatial map integrating verified ground shelter capacities, active district alerts, and offline queue nodes.",
+    exploreLiveMap: "Explore Live Map",
+    criticalAlertPreview: "CRITICAL ALERT PREVIEW",
+    alertLocation: "Ernakulam District",
+    alertTitle: "Heavy Rainfall & Riverine Water Level Warning",
+    alertDescription: "Periyar River water levels rising near Aluva Bank Road. Evacuees in low-lying zones are advised to move to higher ground shelters immediately.",
+    alertSource: "Source: NDMA / District Control Room",
+    alertIssued: "Issued: Live · Valid until further notice",
+    problemSolutionImpact: "Problem ➔ Solution ➔ Impact",
+    probTitle: "Disrupted Communication",
+    probDesc: "During emergencies, cellular networks fail, shelter capacities are unknown, and panic isolates families.",
+    solTitle: "One Reliable Safety Network",
+    solDesc: "SHAASTRA tracks real-time shelter beds, works offline without internet, and sends live SMS updates.",
+    impTitle: "Immediate Shelter & Resupply",
+    impDesc: "People locate safe beds instantly, families reconnect securely, and authorities predict shortages before failure.",
+    worksOffline: "Works Offline",
+    worksOfflineSub: "Saved on your phone",
+    smsAlerts: "SMS Alerts",
+    smsAlertsSub: "Works on any phone",
+    aiHelper: "AI Assistant",
+    aiHelperSub: "24/7 Safety Guidance",
+    safePrivate: "Safe & Private",
+    safePrivateSub: "Your privacy protected",
+    govReady: "Government Ready",
+    govReadySub: "Built to NDMA standards",
+    findShelterHeading: "Find a Safe Shelter",
+    findShelterSub: "Check live bed availability, food rations, and medical stock nearby.",
+    viewDetails: "View Details →",
+    getDirections: "Get Directions ↗",
+    searchShelters: "Search by shelter name or area...",
+    allDistricts: "All Districts",
+    allStatuses: "All Statuses",
+    foodStock: "Food Rations",
+    medStock: "Medical Care",
+    familyHeadline: "Every Person Deserves to Be Found",
+    familySubtext: "Let your family know you are safe or search for a loved one in verified relief shelters.",
+    imSafeTab: "I'm Safe",
+    lookingTab: "Looking for Someone",
+    fullName: "Full Name",
+    mobilePhone: "Mobile Number",
+    currentShelter: "Current Shelter",
+    familyMessage: "Message for Family",
+    markMeSafeBtn: "Mark Me Safe",
+    missingName: "Name of Missing Family Member",
+    searchRegistryBtn: "Search Verified Registry",
+    noRecordFound: "No verified safe record found yet. Please check back shortly.",
+    verifiedSafeAt: "Verified safe at",
+    familyNetworkTitle: "FAMILY SAFETY NETWORK",
+    familyNetworkSub: "Stay connected when cellular networks are disrupted.",
+    userSafetyStatusTitle: "YOUR CURRENT SAFETY STATUS",
+    notYetMarkedSafe: "NOT YET MARKED SAFE",
+    safeStatus: "SAFE ✓",
+    pendingStatus: "PENDING VERIFICATION",
+    quoteText: "Your safety status can help your family know you're okay.",
+
+    // Camera & Verification UI
+    takePhoto: "Take Photo",
+    uploadPhoto: "Upload Photo",
+    removePhoto: "Remove Photo",
+    optionalPhotoLabel: "Optional Verification Photo",
+    pendingVerificationLabel: "PENDING VERIFICATION",
+    verifiedSafeLabel: "VERIFIED SAFE",
+    verifiedByResponder: "Verified by Authorized Responder",
+    verifyActionBtn: "Verify Status",
+    rejectActionBtn: "Reject",
+    possibleMatchMsg: "Possible Match — Requires Responder Verification",
+    photoSecurityNotice: "Photos are protected and accessible only to authorized responders.",
+    authorityVerificationTitle: "AUTHORITY SAFETY VERIFICATION",
+    authorityVerificationSub: "Review pending citizen safety registrations.",
+  },
+  hi: {
+    brandName: "शास्त्र (SHAASTRA)",
+    tagline: "वास्तविक समय • विश्वसनीय • सुरक्षित",
+    heroHeadline: "जब आपदा आती है, तो हर सेकंड अत्यंत महत्वपूर्ण होता है।",
+    heroSubtext: "शास्त्र आपदा के दौरान नागरिकों, आश्रयों, परिवारों और राहत टीमों को एक सुरक्षित नेटवर्क से जोड़ता है।",
+    citizenPortal: "नागरिक पोर्टल",
+    shelterAdmin: "आश्रय प्रबंधक",
+    districtCommand: "जिला कमांड",
+    systemAdmin: "सिस्टम प्रबंधक",
+    signOut: "साइन आउट",
+    signIn: "साइन इन",
+    overview: "अवलोकन",
+    shelterDiscovery: "आश्रय खोज",
+    findShelter: "नजदीकी आश्रय खोजें",
+    findSafeShelter: "सुरक्षित आश्रय खोजें",
+    familyReconnection: "परिवार पुनर्मिलन",
+    imSafeFindSomeone: "मैं सुरक्षित हूँ / किसी को खोजें",
+    reportHazard: "खतरे की सूचना दें",
+    emergencyHelpline: "राष्ट्रीय आपातकालीन हेल्पलाइन 112",
+    call112: "आपातकालीन कॉल 112",
+    aiAssistant: "एआई आपातकालीन सहायक",
+    offlineMode: "ऑफलाइन मोड — सेव की गई जानकारी सक्रिय",
+    online: "ऑनलाइन",
+    offline: "ऑफलाइन",
+    syncing: "सिंक हो रहा है...",
+    pending: "लंबित",
+    attentionNeeded: "ध्यान दें",
+    activeAlerts: "सक्रिय चेतावनी",
+    activeShelters: "सक्रिय आश्रय केंद्र",
+    availableBeds: "उपलब्ध बिस्तर",
+    safeRegistrations: "सुरक्षित पंजीकृत नागरिक",
+    acrossDistrict: "एर्नाकुलम जिले में",
+    liveBedCapacity: "लाइव बिस्तर क्षमता",
+    peopleMarkedSafe: "सुरक्षित चिह्नित नागरिक",
+    requiringAttention: "ध्यान देने योग्य",
+    howTransformsHeading: "शास्त्र आपदा राहत प्रक्रिया को कैसे सशक्त बनाता है",
+    workflowSubtitle: "संबद्ध राहत कार्यप्रवाह",
+    card1Title: "सुरक्षा खोजें",
+    card1Desc: "लाइव बिस्तर उपलब्धता और मानचित्र के माध्यम से शीघ्र सुरक्षित स्थान पाएं।",
+    card2Title: "पुनर्मिलन",
+    card2Desc: "सत्यापित सुरक्षा अपडेट से परिवारों को अपनों की सुरक्षा की जानकारी मिलती है।",
+    card3Title: "समन्वय",
+    card3Desc: "लाइव स्थिति डेटा से राहत टीमें संसाधनों और आश्रयों का बेहतर संचालन करती हैं।",
+    card4Title: "जुड़े रहें",
+    card4Desc: "नेटवर्क विफलता के दौरान भी ऑफलाइन और एसएमएस से सूचनाएं लगातार मिलती हैं।",
+    spatialHeading: "आपदा राहत नेटवर्क को लाइव देखें",
+    spatialSubtext: "वास्तविक समय का इंटरेक्टिव मानचित्र जो आश्रय क्षमता, अलर्ट और नेटवर्क स्थिति दिखाता है।",
+    exploreLiveMap: "लाइव मानचित्र देखें",
+    criticalAlertPreview: "गंभीर चेतावनी पूर्वावलोकन",
+    alertLocation: "एर्नाकुलम जिला",
+    alertTitle: "भारी वर्षा एवं नदी जल स्तर चेतावनी",
+    alertDescription: "पेरियार नदी का जलस्तर अलुवा बैंक रोड के पास बढ़ रहा है। निचले क्षेत्रों के निवासियों को तुरंत ऊंचे स्थान के आश्रय केंद्रों में जाने की सलाह दी जाती है।",
+    alertSource: "स्रोत: एनडीएमए / जिला नियंत्रण कक्ष",
+    alertIssued: "जारी: लाइव · अगली सूचना तक प्रभावी",
+    problemSolutionImpact: "समस्या ➔ समाधान ➔ प्रभाव",
+    probTitle: "संचार बाधा",
+    probDesc: "आपात स्थिति में मोबाइल नेटवर्क बाधित होते हैं और आश्रय क्षमता की जानकारी नहीं मिल पाती।",
+    solTitle: "एक विश्वसनीय सुरक्षा नेटवर्क",
+    solDesc: "शास्त्र वास्तविक समय में बिस्तर क्षमता ट्रैक करता है, बिना इंटरनेट ऑफलाइन काम करता है और एसएमएस भेजता है।",
+    impTitle: "त्वरित आश्रय और सहायता",
+    impDesc: "नागरिक तुरंत सुरक्षित बिस्तर ढूंढते हैं, परिवार आपस में जुड़ते हैं और प्रशासन अभाव से पहले कदम उठाता है।",
+    worksOffline: "ऑफलाइन कार्य",
+    worksOfflineSub: "आपके फोन में सुरक्षित",
+    smsAlerts: "एसएमएस अलर्ट",
+    smsAlertsSub: "सभी फोन पर उपलब्ध",
+    aiHelper: "एआई सहायक",
+    aiHelperSub: "24/7 सुरक्षा मार्गदर्शन",
+    safePrivate: "सुरक्षित व गोपनीय",
+    safePrivateSub: "आपकी निजता सुरक्षित",
+    govReady: "सरकारी मानकों के अनुरूप",
+    govReadySub: "एनडीएमए दिशानिर्देशों पर निर्मित",
+    findShelterHeading: "सुरक्षित आश्रय खोजें",
+    findShelterSub: "आस-पास उपलब्ध बिस्तर क्षमता, भोजन और दवाइयों का स्टॉक देखें।",
+    viewDetails: "विवरण देखें →",
+    getDirections: "दिशा-निर्देश लें ↗",
+    searchShelters: "आश्रय का नाम या क्षेत्र से खोजें...",
+    allDistricts: "सभी जिले",
+    allStatuses: "सभी स्थितियाँ",
+    foodStock: "भोजन सामग्री",
+    medStock: "चिकित्सा सेवा",
+    familyHeadline: "हर नागरिक का पुनर्मिलन हमारी प्राथमिकता है",
+    familySubtext: "अपने परिवार को अपनी सुरक्षा की जानकारी दें या सत्यापित आश्रय सूची में अपनों को खोजें।",
+    imSafeTab: "मैं सुरक्षित हूँ",
+    lookingTab: "किसी को खोज रहा हूँ",
+    fullName: "पूरा नाम",
+    mobilePhone: "मोबाइल नंबर",
+    currentShelter: "वर्तमान आश्रय केंद्र",
+    familyMessage: "परिवार के लिए संदेश",
+    markMeSafeBtn: "सुरक्षित चिह्नित करें",
+    missingName: "लापता परिजन का नाम",
+    searchRegistryBtn: "सत्यापित रजिस्टर में खोजें",
+    noRecordFound: "अभी तक कोई सत्यापित सुरक्षा रिकॉर्ड नहीं मिला। कृपया थोड़ी देर बाद पुनः प्रयास करें।",
+    verifiedSafeAt: "सुरक्षित पाया गया आश्रय:",
+    familyNetworkTitle: "परिवार सुरक्षा नेटवर्क",
+    familyNetworkSub: "संचार बाधित होने पर भी अपनों से जुड़े रहें।",
+    userSafetyStatusTitle: "आपकी वर्तमान सुरक्षा स्थिति",
+    notYetMarkedSafe: "अभी तक सुरक्षित चिह्नित नहीं",
+    safeStatus: "सुरक्षित ✓",
+    pendingStatus: "सत्यापन का इंतजार",
+    quoteText: "आपकी सुरक्षा स्थिति आपके परिवार को निश्चिंत करने में मदद करती है।",
+
+    // Camera & Verification UI
+    takePhoto: "फोटो लें",
+    uploadPhoto: "फोटो अपलोड करें",
+    removePhoto: "फोटो हटाएं",
+    optionalPhotoLabel: "वैकल्पि‍क सत्यापन फोटो",
+    pendingVerificationLabel: "सत्यापन का इंतजार",
+    verifiedSafeLabel: "सत्यापित सुरक्षित",
+    verifiedByResponder: "अधिकृत प्रतिक्रियाकर्ता द्वारा सत्यापित",
+    verifyActionBtn: "सत्यापित करें",
+    rejectActionBtn: "अस्वीकार करें",
+    possibleMatchMsg: "संभावित मिलान — प्रतिक्रियाकर्ता सत्यापन की आवश्यकता है",
+    photoSecurityNotice: "तस्वीरें सुरक्षित हैं और केवल अधिकृत अधिकारियों के लिए उपलब्ध हैं।",
+    authorityVerificationTitle: "प्राधिकरण सुरक्षा सत्यापन",
+    authorityVerificationSub: "लंबित नागरिक सुरक्षा पंजीकरण की समीक्षा करें।",
+  },
+};
+
+interface LanguageContextType {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: string) => string;
+}
+
+const LanguageContext = createContext<LanguageContextType>({
+  language: "en",
+  setLanguage: () => {},
+  t: (key: string) => key,
+});
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguageState] = useState<Language>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("shaastra_lang") as Language;
+      if (saved === "en" || saved === "hi") {
+        return saved;
+      }
+    }
+    return "en";
+  });
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("shaastra_lang", lang);
+      document.cookie = `shaastra_lang=${lang}; path=/; max-age=31536000`;
+    }
+  };
+
+  const t = (key: string): string => {
+    return translations[language]?.[key] || translations["en"]?.[key] || key;
+  };
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+}
+
+export function useTranslation() {
+  return useContext(LanguageContext);
+}
