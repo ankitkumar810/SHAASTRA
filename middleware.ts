@@ -34,6 +34,11 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // Explicitly bypass session checks for public Twilio SMS Webhook
+  if (pathname === "/api/v1/sms/webhook") {
+    return NextResponse.next();
+  }
+
   // 1. Unauthenticated users trying to access protected dashboard routes -> redirect to /login
   if (!user && pathname.startsWith("/dashboard")) {
     const url = request.nextUrl.clone();
