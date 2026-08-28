@@ -1040,7 +1040,7 @@ export function PrototypeApp() {
                           }}
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                          <span>📷 {t("takePhoto")}</span>
+                          <span>{t("takePhoto")}</span>
                           <input type="file" accept="image/*" capture="user" onChange={handlePhotoSelect} style={{ display: "none" }} />
                         </label>
 
@@ -1061,7 +1061,7 @@ export function PrototypeApp() {
                           }}
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                          <span>↑ {t("uploadPhoto")}</span>
+                          <span>{t("uploadPhoto")}</span>
                           <input type="file" accept="image/*" onChange={handlePhotoSelect} style={{ display: "none" }} />
                         </label>
                       </div>
@@ -1074,6 +1074,7 @@ export function PrototypeApp() {
                           <button
                             type="button"
                             onClick={() => setPhotoPreview(null)}
+                            aria-label="Remove Photo"
                             style={{
                               position: "absolute",
                               top: "4px",
@@ -1082,15 +1083,14 @@ export function PrototypeApp() {
                               color: "white",
                               border: 0,
                               borderRadius: "50%",
-                              width: "22px",
-                              height: "22px",
+                              width: "24px",
+                              height: "24px",
                               cursor: "pointer",
-                              fontSize: "11px",
                               display: "grid",
                               placeItems: "center",
                             }}
                           >
-                            ✕
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                           </button>
                         </div>
                       )}
@@ -1121,15 +1121,22 @@ export function PrototypeApp() {
                             <div key={person.id} style={{ background: "#E2F6ED", border: "1px solid #C4EBE3", borderRadius: "8px", padding: "14px" }}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px" }}>
                                 <div>
-                                  <strong style={{ font: "700 16px Outfit", color: "#2E8B68" }}>{person.name}</strong>
-                                  <p style={{ fontSize: "13px", margin: "4px 0 0", color: "#17323B" }}>{t("verifiedSafeAt")} {person.shelter}</p>
-                                  <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 6px", borderRadius: "4px", background: person.verificationStatus === "VERIFIED_SAFE" ? "#C4EBE3" : "#FFF1D9", color: person.verificationStatus === "VERIFIED_SAFE" ? "#2E8B68" : "#E39A2B", display: "inline-block", marginTop: "6px" }}>
-                                    {person.verificationStatus === "VERIFIED_SAFE" ? `✓ ${t("verifiedSafeLabel")} — ${person.verifiedBy || t("verifiedByResponder")}` : `⏳ ${t("possibleMatchMsg")}`}
+                                  <strong style={{ font: "700 16px Outfit", color: "#17323B" }}>{person.name}</strong>
+                                  <p style={{ fontSize: "13px", margin: "4px 0 0", color: "#577276" }}>{t("verifiedSafeAt")} {person.shelter}</p>
+                                  <span style={{ fontSize: "11px", fontWeight: 700, padding: "3px 8px", borderRadius: "4px", background: person.verificationStatus === "VERIFIED_SAFE" ? "#E2F6ED" : "#FFF1D9", color: person.verificationStatus === "VERIFIED_SAFE" ? "#2E8B68" : "#E39A2B", display: "inline-flex", alignItems: "center", gap: "4px", marginTop: "6px" }}>
+                                    {person.verificationStatus === "VERIFIED_SAFE" ? (
+                                      <>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                        <span>{t("verifiedSafeLabel")}</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        <span>{t("pendingVerificationLabel")}</span>
+                                      </>
+                                    )}
                                   </span>
                                 </div>
-                                {person.photoUrl && (
-                                  <img src={person.photoUrl} alt="Protected Thumbnail" style={{ width: "50px", height: "50px", borderRadius: "6px", objectFit: "cover", border: "1px solid #2E8B68" }} />
-                                )}
                               </div>
                             </div>
                           ))
@@ -1142,76 +1149,56 @@ export function PrototypeApp() {
                 )}
               </div>
 
-              {/* Right Column: Useful "Family Safety Network" Informational Panel */}
+              {/* Right Column: CITIZEN VERIFICATION STATUS PANEL (Clear 2-Sided Flow) */}
               <div style={{ display: "grid", gap: "20px", alignContent: "start" }}>
-                {/* User Status Card */}
-                <div style={{ background: "white", border: "1px solid #DCEAE8", borderRadius: "12px", padding: "22px", boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#577276", letterSpacing: "1px", display: "block", marginBottom: "8px" }}>{t("userSafetyStatusTitle")}</span>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                      <strong style={{ font: "700 20px Outfit", color: userSafetyStatus === "SAFE" ? "#2E8B68" : userSafetyStatus === "PENDING" ? "#E39A2B" : "#17323B" }}>
-                        {userSafetyStatus === "SAFE" ? `✓ ${t("safeStatus")}` : userSafetyStatus === "PENDING" ? `⏳ ${t("pendingStatus")}` : t("notYetMarkedSafe")}
-                      </strong>
-                      <p style={{ fontSize: "12px", color: "#577276", margin: "2px 0 0" }}>
-                        {userSafetyStatus === "SAFE" ? "Listed in verified family registry" : userSafetyStatus === "PENDING" ? "Pending verification by responder" : "Register to let family know you are okay"}
-                      </p>
-                    </div>
+                {/* Citizen Verification Status Card */}
+                <div style={{ background: "#FFFFFF", border: "1px solid #DCEAE8", borderTop: `4px solid ${userSafetyStatus === "SAFE" ? "#2E8B68" : userSafetyStatus === "PENDING" ? "#E39A2B" : "#087D7A"}`, borderRadius: "12px", padding: "24px", boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#577276", letterSpacing: "1.2px", textTransform: "uppercase" }}>
+                      {t("verificationStatusHeading")}
+                    </span>
 
-                    {userSafetyStatus !== "SAFE" && (
-                      <button
-                        onClick={() => setFamilyTab("safe")}
-                        style={{ minHeight: "44px", background: "#087D7A", color: "white", border: 0, borderRadius: "6px", padding: "8px 16px", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}
-                      >
-                        {t("markMeSafeBtn")} →
-                      </button>
+                    {userSafetyStatus === "SAFE" ? (
+                      <span style={{ background: "#E2F6ED", color: "#2E8B68", border: "1px solid #C4EBE3", fontSize: "11px", fontWeight: 700, padding: "4px 10px", borderRadius: "12px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                        <span>{t("verifiedSafeLabel")}</span>
+                      </span>
+                    ) : userSafetyStatus === "PENDING" ? (
+                      <span style={{ background: "#FFF1D9", color: "#E39A2B", border: "1px solid #F5DBAC", fontSize: "11px", fontWeight: 700, padding: "4px 10px", borderRadius: "12px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>{t("pendingVerificationLabel")}</span>
+                      </span>
+                    ) : (
+                      <span style={{ background: "#F5FAF9", color: "#577276", border: "1px solid #DCEAE8", fontSize: "11px", fontWeight: 700, padding: "4px 10px", borderRadius: "12px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <span>{t("notSubmittedLabel")}</span>
+                      </span>
                     )}
                   </div>
-                </div>
 
-                {/* Authority Safety Verification Review Queue */}
-                <div style={{ background: "#FFFFFF", border: "1px solid #DCEAE8", borderTop: "4px solid #E39A2B", borderRadius: "12px", padding: "20px", boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
-                  <h3 style={{ font: "700 16px Outfit", margin: "0 0 4px", color: "#17323B", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E39A2B" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    <span>{t("authorityVerificationTitle")}</span>
+                  <h3 style={{ font: "700 20px Outfit", margin: "0 0 8px", color: "#17323B" }}>
+                    {userSafetyStatus === "SAFE"
+                      ? t("verifiedSafeLabel")
+                      : userSafetyStatus === "PENDING"
+                      ? t("pendingVerificationLabel")
+                      : t("notYetMarkedSafe")}
                   </h3>
-                  <p style={{ fontSize: "12px", color: "#577276", margin: "0 0 14px" }}>{t("authorityVerificationSub")}</p>
 
-                  <div style={{ display: "grid", gap: "10px" }}>
-                    {people.filter((p) => p.photoUrl || p.verificationStatus === "PENDING_VERIFICATION").map((record) => (
-                      <div key={record.id} style={{ background: "#F5FAF9", border: "1px solid #DCEAE8", borderRadius: "8px", padding: "12px", display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
-                        {record.photoUrl && (
-                          <img src={record.photoUrl} alt="Submission Preview" style={{ width: "50px", height: "50px", borderRadius: "6px", objectFit: "cover", border: "1px solid #087D7A" }} />
-                        )}
-                        <div style={{ flex: 1, minWidth: "160px" }}>
-                          <strong style={{ fontSize: "14px", color: "#17323B" }}>{record.name}</strong>
-                          <span style={{ display: "block", fontSize: "11px", color: "#577276" }}>📍 {record.shelter}</span>
-                          <span style={{ fontSize: "10px", fontWeight: 700, padding: "2px 6px", borderRadius: "4px", background: record.verificationStatus === "VERIFIED_SAFE" ? "#E2F6ED" : "#FFF1D9", color: record.verificationStatus === "VERIFIED_SAFE" ? "#2E8B68" : "#E39A2B", display: "inline-block", marginTop: "4px" }}>
-                            {record.verificationStatus === "VERIFIED_SAFE" ? `✓ ${t("verifiedSafeLabel")}` : `⏳ ${t("pendingVerificationLabel")}`}
-                          </span>
-                        </div>
+                  <p style={{ fontSize: "13px", color: "#3C5A63", margin: "0 0 16px", lineHeight: 1.55 }}>
+                    {userSafetyStatus === "SAFE"
+                      ? t("verifiedSafeMessage")
+                      : userSafetyStatus === "PENDING"
+                      ? t("pendingVerificationMessage")
+                      : t("notSubmittedMessage")}
+                  </p>
 
-                        {record.verificationStatus === "PENDING_VERIFICATION" && (
-                          <div style={{ display: "flex", gap: "6px" }}>
-                            <button
-                              onClick={() => handleVerifyRecord(record.id)}
-                              style={{ minHeight: "36px", background: "#2E8B68", color: "white", border: 0, borderRadius: "6px", padding: "6px 12px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
-                            >
-                              ✓ {t("verifyActionBtn")}
-                            </button>
-                            <button
-                              onClick={() => handleRejectRecord(record.id)}
-                              style={{ minHeight: "36px", background: "#D94B3D", color: "white", border: 0, borderRadius: "6px", padding: "6px 12px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
-                            >
-                              ✕ {t("rejectActionBtn")}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                  <div style={{ background: "#F5FAF9", border: "1px solid #DCEAE8", borderRadius: "8px", padding: "12px 14px", fontSize: "12px", color: "#577276", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#087D7A" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span>{t("photoSecurityNotice")}</span>
                   </div>
                 </div>
 
-                {/* Family Safety Network Panel */}
+                {/* Family Safety Network Information Card */}
                 <div style={{ background: "#FFFFFF", border: "1px solid #DCEAE8", borderTop: "4px solid #087D7A", borderRadius: "12px", padding: "24px", boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
                   <h3 style={{ font: "700 18px Outfit", margin: "0 0 6px", color: "#17323B", display: "flex", alignItems: "center", gap: "8px" }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#087D7A" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -1219,7 +1206,7 @@ export function PrototypeApp() {
                   </h3>
                   <p style={{ fontSize: "13px", color: "#577276", margin: "0 0 20px" }}>{t("familyNetworkSub")}</p>
 
-                  {/* Lightweight Connection Flow Diagram */}
+                  {/* Connection Flow Diagram */}
                   <div style={{ background: "#F5FAF9", border: "1px solid #E6EEEE", borderRadius: "10px", padding: "16px", textAlign: "center", marginBottom: "20px" }}>
                     <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", fontSize: "12px", fontWeight: 700, color: "#17323B" }}>
                       <div style={{ background: "#E9F7F4", padding: "8px 12px", borderRadius: "8px", border: "1px solid #C4EBE3" }}>
@@ -1227,7 +1214,7 @@ export function PrototypeApp() {
                       </div>
                       <span style={{ color: "#087D7A", fontWeight: "bold" }}>➔</span>
                       <div style={{ background: "#E2F6ED", color: "#2E8B68", padding: "8px 12px", borderRadius: "8px", border: "1px solid #C4EBE3" }}>
-                        <span>✓ SAFE</span>
+                        <span>VERIFIED SAFE</span>
                       </div>
                       <span style={{ color: "#087D7A", fontWeight: "bold" }}>➔</span>
                       <div style={{ background: "#E9F7F4", padding: "8px 12px", borderRadius: "8px", border: "1px solid #C4EBE3" }}>
@@ -1238,20 +1225,16 @@ export function PrototypeApp() {
 
                   <div style={{ display: "grid", gap: "12px", fontSize: "13px", color: "#17323B", lineHeight: 1.4 }}>
                     <div style={{ display: "flex", gap: "8px" }}>
-                      <span style={{ color: "#2E8B68", fontWeight: "bold" }}>✓</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B68" strokeWidth="2.5" style={{ marginTop: "2px", flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
                       <span><strong>{t("markMeSafeBtn")}:</strong> Updates verified registry accessible by family.</span>
                     </div>
                     <div style={{ display: "flex", gap: "8px" }}>
-                      <span style={{ color: "#2E8B68", fontWeight: "bold" }}>✓</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B68" strokeWidth="2.5" style={{ marginTop: "2px", flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
                       <span><strong>Search loved ones:</strong> Search verified shelter lists by name.</span>
                     </div>
                     <div style={{ display: "flex", gap: "8px" }}>
-                      <span style={{ color: "#2E8B68", fontWeight: "bold" }}>✓</span>
-                      <span><strong>{t("safePrivate")}:</strong> {t("photoSecurityNotice")}</span>
-                    </div>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <span style={{ color: "#2E8B68", fontWeight: "bold" }}>✓</span>
-                      <span><strong>Works Offline & SMS:</strong> Syncs status via Twilio SMS without internet.</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B68" strokeWidth="2.5" style={{ marginTop: "2px", flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+                      <span><strong>Privacy Protection:</strong> Photos are strictly restricted to authorized responder verification.</span>
                     </div>
                   </div>
 

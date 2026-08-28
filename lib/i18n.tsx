@@ -120,6 +120,11 @@ const translations: Record<Language, Record<string, string>> = {
     photoSecurityNotice: "Photos are protected and accessible only to authorized responders.",
     authorityVerificationTitle: "AUTHORITY SAFETY VERIFICATION",
     authorityVerificationSub: "Review pending citizen safety registrations.",
+    verificationStatusHeading: "Verification Status",
+    pendingVerificationMessage: "Your safety registration has been submitted and is awaiting verification by an authorized responder.",
+    verifiedSafeMessage: "Verified by Authorized Responder.",
+    notSubmittedMessage: "Register your safety status so family members can find you in verified relief records.",
+    notSubmittedLabel: "NOT SUBMITTED YET",
   },
   hi: {
     brandName: "शास्त्र (SHAASTRA)",
@@ -236,6 +241,11 @@ const translations: Record<Language, Record<string, string>> = {
     photoSecurityNotice: "तस्वीरें सुरक्षित हैं और केवल अधिकृत अधिकारियों के लिए उपलब्ध हैं।",
     authorityVerificationTitle: "प्राधिकरण सुरक्षा सत्यापन",
     authorityVerificationSub: "लंबित नागरिक सुरक्षा पंजीकरण की समीक्षा करें।",
+    verificationStatusHeading: "सत्यापन स्थिति",
+    pendingVerificationMessage: "आपका सुरक्षा पंजीकरण जमा कर दिया गया है और अधिकृत उत्तरदाता द्वारा सत्यापन की प्रतीक्षा में है।",
+    verifiedSafeMessage: "अधिकृत उत्तरदाता द्वारा सत्यापित।",
+    notSubmittedMessage: "अपनी सुरक्षा स्थिति पंजीकृत करें ताकि परिवार के लोग आपको सत्यापित रिकॉर्ड में ढूंढ सकें।",
+    notSubmittedLabel: "अभी तक सबमिट नहीं किया गया",
   },
 };
 

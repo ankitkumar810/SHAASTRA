@@ -81,7 +81,7 @@ function LoginFormContent() {
           data: {
             full_name: fullName,
             phone: phone,
-            requested_role: requestedRole,
+            requested_role: "CITIZEN",
             district_name: districtName,
           },
         },
@@ -95,17 +95,8 @@ function LoginFormContent() {
 
       if (data.user) {
         if (data.session) {
-          setSuccessMessage("Account created successfully. Redirecting to dashboard...");
-          const rolePath =
-            requestedRole === "SYSTEM_ADMIN"
-              ? "/dashboard/admin"
-              : requestedRole === "DISTRICT_AUTHORITY"
-              ? "/dashboard/authority"
-              : requestedRole === "SHELTER_ADMIN"
-              ? "/dashboard/shelter"
-              : "/dashboard/citizen";
-
-          router.push(rolePath);
+          setSuccessMessage("Account created successfully. Redirecting to citizen dashboard...");
+          router.push("/dashboard/citizen");
           router.refresh();
         } else {
           setSuccessMessage("Account registered! Please check your email for a verification link.");
@@ -250,35 +241,19 @@ function LoginFormContent() {
             />
           </label>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-            <label style={{ display: "grid", gap: "6px", fontSize: "13px", fontWeight: 600 }}>
-              SHAASTRA Role
-              <select
-                value={requestedRole}
-                onChange={(e) => setRequestedRole(e.target.value)}
-                style={{ padding: "11px", borderRadius: "8px", border: "1px solid #dce7e6", fontSize: "13px" }}
-              >
-                <option value="CITIZEN">Citizen</option>
-                <option value="SHELTER_ADMIN">Shelter Administrator</option>
-                <option value="DISTRICT_AUTHORITY">District Authority</option>
-                <option value="SYSTEM_ADMIN">System Administrator</option>
-              </select>
-            </label>
-
-            <label style={{ display: "grid", gap: "6px", fontSize: "13px", fontWeight: 600 }}>
-              District
-              <select
-                value={districtName}
-                onChange={(e) => setDistrictName(e.target.value)}
-                style={{ padding: "11px", borderRadius: "8px", border: "1px solid #dce7e6", fontSize: "13px" }}
-              >
-                <option value="Ernakulam">Ernakulam</option>
-                <option value="Kozhikode">Kozhikode</option>
-                <option value="Thiruvananthapuram">Thiruvananthapuram</option>
-                <option value="Wayanad">Wayanad</option>
-              </select>
-            </label>
-          </div>
+          <label style={{ display: "grid", gap: "6px", fontSize: "13px", fontWeight: 600 }}>
+            District
+            <select
+              value={districtName}
+              onChange={(e) => setDistrictName(e.target.value)}
+              style={{ padding: "11px", borderRadius: "8px", border: "1px solid #dce7e6", fontSize: "13px" }}
+            >
+              <option value="Ernakulam">Ernakulam</option>
+              <option value="Kozhikode">Kozhikode</option>
+              <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+              <option value="Wayanad">Wayanad</option>
+            </select>
+          </label>
 
           <label style={{ display: "grid", gap: "6px", fontSize: "13px", fontWeight: 600 }}>
             Mobile Number (Optional)
@@ -292,7 +267,8 @@ function LoginFormContent() {
           </label>
 
           <div style={{ background: "#e9f7f4", padding: "10px 12px", borderRadius: "8px", fontSize: "12px", color: "#507376", lineHeight: 1.4 }}>
-            🛡️ <strong>Role Access Policy:</strong> Citizen access is granted immediately upon registration. Privileged roles (Shelter Admin, District Authority, System Admin) require district verification before elevated permissions are activated.
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#087d7a" strokeWidth="2" style={{ verticalAlign: "middle", marginRight: "6px" }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            <strong>Registration Policy:</strong> Public registration creates a secure Citizen Safety account. Privileged responder & authority credentials are explicitly provisioned by System Administrators.
           </div>
 
           <button

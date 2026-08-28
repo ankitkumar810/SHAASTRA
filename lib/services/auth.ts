@@ -11,17 +11,13 @@ export interface CreateProfileInput {
   shelterId?: string | null;
 }
 
+/**
+ * SERVER-SIDE ROLE SECURITY SANITIZATION
+ * Public signups are strictly forced to CITIZEN role with VERIFIED status.
+ * SYSTEM_ADMIN and DISTRICT_AUTHORITY roles CANNOT be self-assigned under any circumstances.
+ */
 export function sanitizeRole(requestedRole?: string): { role: Role; verificationStatus: VerificationStatus } {
-  const normalized = (requestedRole || "CITIZEN").toUpperCase();
-
-  if (normalized === "SHELTER_ADMIN" || normalized === "DISTRICT_AUTHORITY" || normalized === "SYSTEM_ADMIN") {
-    // Privileged role requests require verification by a System Administrator
-    return {
-      role: normalized as Role,
-      verificationStatus: "PENDING" as VerificationStatus,
-    };
-  }
-
+  // Always enforce CITIZEN for public signups. Privileged roles cannot be self-requested.
   return {
     role: "CITIZEN" as Role,
     verificationStatus: "VERIFIED" as VerificationStatus,
@@ -52,7 +48,7 @@ export async function getUserProfile(userId: string) {
         id: user.id,
         email: user.email,
         fullName: user.user_metadata?.full_name || user.email?.split("@")[0] || "SHAASTRA User",
-        requestedRole: user.user_metadata?.requested_role,
+        requestedRole: "CITIZEN", // Strictly enforce CITIZEN for public registrations
         districtId: user.user_metadata?.district_id,
       });
 
@@ -72,9 +68,9 @@ export async function getUserProfile(userId: string) {
 }
 
 export async function syncUserProfile(input: CreateProfileInput) {
-  const { role, verificationStatus } = sanitizeRole(input.requestedRole);
-
   try {
+    const { role, verificationStatus } = sanitizeRole(input.requestedRole);
+
     const existing = await prisma.profile.findUnique({
       where: { id: input.id },
     });
@@ -86,42 +82,22 @@ export async function syncUserProfile(input: CreateProfileInput) {
     return await prisma.profile.create({
       data: {
         id: input.id,
-        email: input.email || null,
-        fullName: input.fullName || "SHAASTRA User",
-        phone: input.phone || null,
+        email: input.email || undefined,
+        fullName: input.fullName,
+        phone: input.phone || undefined,
         role: role,
         verificationStatus: verificationStatus,
-        districtId: input.districtId || null,
-        shelterId: input.shelterId || null,
+        districtId: input.districtId || undefined,
+        shelterId: input.shelterId || undefined,
       },
     });
   } catch (error) {
-    console.error("Error syncing user profile:", error);
+    console.error("Error creating user profile:", error);
     return null;
   }
 }
 
-export function isRoleAuthorizedForDashboard(userRole: Role, verificationStatus: VerificationStatus, path: string): boolean {
-  if (path.startsWith("/dashboard/admin")) {
-    return userRole === "SYSTEM_ADMIN" && verificationStatus === "VERIFIED";
-  }
-
-  if (path.startsWith("/dashboard/authority")) {
-    return (userRole === "DISTRICT_AUTHORITY" || userRole === "SYSTEM_ADMIN") && verificationStatus === "VERIFIED";
-  }
-
-  if (path.startsWith("/dashboard/shelter")) {
-    return (userRole === "SHELTER_ADMIN" || userRole === "DISTRICT_AUTHORITY" || userRole === "SYSTEM_ADMIN") && verificationStatus === "VERIFIED";
-  }
-
-  if (path.startsWith("/dashboard/citizen")) {
-    return true; // All authenticated users can access citizen dashboard
-  }
-
-  return true;
-}
-
-export function getDashboardPathForRole(role: Role): string {
+export function getDashboardPathForRole(role?: string): string {
   switch (role) {
     case "SYSTEM_ADMIN":
       return "/dashboard/admin";
