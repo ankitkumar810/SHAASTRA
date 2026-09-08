@@ -7,10 +7,31 @@ import Link from "next/link";
 
 type TabMode = "signin" | "signup";
 
+interface PendingVerificationInfo {
+  role: string;
+  email: string;
+  district?: string;
+}
+
+function formatRoleName(role: string): string {
+  switch (role) {
+    case "SHELTER_ADMIN":
+      return "Shelter Administrator";
+    case "DISTRICT_AUTHORITY":
+      return "District Authority";
+    case "SYSTEM_ADMIN":
+      return "System Administrator";
+    case "CITIZEN":
+    default:
+      return "Citizen";
+  }
+}
+
 function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
+  const queryPendingRole = searchParams.get("pendingRole");
 
   const [mode, setMode] = useState<TabMode>("signin");
   const [email, setEmail] = useState("");
@@ -24,13 +45,28 @@ function LoginFormContent() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const [pendingVerification, setPendingVerification] = useState<PendingVerificationInfo | null>(
+    queryPendingRole ? { role: queryPendingRole, email: "" } : null
+  );
+
   const supabase = createClient();
+
+  async function handleReturnToSignIn() {
+    await supabase.auth.signOut();
+    setPendingVerification(null);
+    setMode("signin");
+    setErrorMessage("");
+    setSuccessMessage("");
+    setEmail("");
+    setPassword("");
+  }
 
   async function handleSignIn(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
+    setPendingVerification(null);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -45,8 +81,25 @@ function LoginFormContent() {
       }
 
       if (data.user) {
+        // Fetch DB profile to check actual verified role and verification status
+        const res = await fetch("/api/auth/me");
+        const meData = await res.json();
+        const profile = meData?.data?.profile;
+
+        const role = profile?.role || data.user.user_metadata?.requested_role || "CITIZEN";
+        const verificationStatus = profile?.verificationStatus || (role === "CITIZEN" ? "VERIFIED" : "PENDING");
+
+        if (verificationStatus === "PENDING" && role !== "CITIZEN") {
+          setPendingVerification({
+            role,
+            email: data.user.email || email,
+            district: profile?.district?.name || districtName,
+          });
+          setLoading(false);
+          return;
+        }
+
         setSuccessMessage("Signed in successfully. Redirecting...");
-        const role = data.user.user_metadata?.requested_role || "CITIZEN";
         const rolePath =
           role === "SYSTEM_ADMIN"
             ? "/dashboard/admin"
@@ -72,6 +125,7 @@ function LoginFormContent() {
     setLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
+    setPendingVerification(null);
 
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -81,7 +135,7 @@ function LoginFormContent() {
           data: {
             full_name: fullName,
             phone: phone,
-            requested_role: "CITIZEN",
+            requested_role: requestedRole,
             district_name: districtName,
           },
         },
@@ -94,12 +148,22 @@ function LoginFormContent() {
       }
 
       if (data.user) {
+        // Sync profile into DB
         if (data.session) {
-          setSuccessMessage("Account created successfully. Redirecting to citizen dashboard...");
+          await fetch("/api/auth/me").catch(() => {});
+        }
+
+        if (requestedRole === "CITIZEN") {
+          setSuccessMessage("Account created successfully. Redirecting to citizen portal...");
           router.push("/dashboard/citizen");
           router.refresh();
         } else {
-          setSuccessMessage("Account registered! Please check your email for a verification link.");
+          // Privileged role registration -> Route to Verification Pending screen
+          setPendingVerification({
+            role: requestedRole,
+            email: data.user.email || email,
+            district: districtName,
+          });
           setLoading(false);
         }
       }
@@ -108,6 +172,105 @@ function LoginFormContent() {
       setErrorMessage(msg);
       setLoading(false);
     }
+  }
+
+  // Render Verification Pending Screen for privileged roles awaiting authorization
+  if (pendingVerification) {
+    return (
+      <div style={{ background: "white", border: "1px solid #dce7e6", borderRadius: "14px", padding: "32px 28px", boxShadow: "0 4px 20px rgba(0,0,0,0.04)" }}>
+        <div style={{ textAlign: "center", marginBottom: "22px" }}>
+          <div
+            style={{
+              width: "56px",
+              height: "56px",
+              background: "#fff9eb",
+              border: "2px solid #f2d28d",
+              borderRadius: "50%",
+              display: "grid",
+              placeItems: "center",
+              margin: "0 auto 16px",
+              fontSize: "26px",
+            }}
+          >
+            ⏳
+          </div>
+          <span
+            style={{
+              display: "inline-block",
+              background: "#fff3d6",
+              color: "#8a6d13",
+              border: "1px solid #f2d28d",
+              borderRadius: "20px",
+              padding: "4px 14px",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.5px",
+              marginBottom: "10px",
+            }}
+          >
+            STATUS: VERIFICATION PENDING
+          </span>
+          <h2 style={{ font: "700 24px Outfit", margin: "4px 0 8px", color: "#17323b" }}>
+            Verification Pending
+          </h2>
+          <p style={{ color: "#71858a", fontSize: "14px", margin: 0 }}>
+            Elevated permissions require district authority approval before activation.
+          </p>
+        </div>
+
+        <div style={{ background: "#f8fbfb", border: "1px solid #dce7e6", borderRadius: "10px", padding: "18px", marginBottom: "20px", display: "grid", gap: "12px", fontSize: "13px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #eef4f3", paddingBottom: "10px" }}>
+            <span style={{ color: "#71858a" }}>Selected Role:</span>
+            <strong style={{ color: "#087d7a", font: "700 14px Outfit" }}>
+              {formatRoleName(pendingVerification.role)}
+            </strong>
+          </div>
+
+          {pendingVerification.email && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #eef4f3", paddingBottom: "10px" }}>
+              <span style={{ color: "#71858a" }}>Account Email:</span>
+              <span style={{ fontWeight: 600, color: "#17323b" }}>{pendingVerification.email}</span>
+            </div>
+          )}
+
+          {pendingVerification.district && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ color: "#71858a" }}>District:</span>
+              <span style={{ fontWeight: 600, color: "#17323b" }}>{pendingVerification.district}</span>
+            </div>
+          )}
+        </div>
+
+        <div style={{ background: "#fff9eb", border: "1px solid #f2d28d", borderRadius: "10px", padding: "14px 16px", marginBottom: "24px", color: "#8a6d13", fontSize: "13px", lineHeight: "1.5" }}>
+          <div style={{ fontWeight: 700, marginBottom: "4px", color: "#6e5509", display: "flex", alignItems: "center", gap: "6px" }}>
+            <span>⚠️</span> Security & Access Notice
+          </div>
+          <p style={{ margin: "0 0 6px" }}>
+            • This account requires district verification before elevated permissions are activated.
+          </p>
+          <p style={{ margin: 0 }}>
+            • You cannot access privileged functionality until your credentials have been reviewed and approved by a System Administrator.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleReturnToSignIn}
+          style={{
+            width: "100%",
+            background: "#087d7a",
+            color: "white",
+            border: 0,
+            borderRadius: "8px",
+            padding: "13px",
+            font: "600 15px 'DM Sans', sans-serif",
+            cursor: "pointer",
+          }}
+        >
+          ← Return to Sign In
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -242,6 +405,20 @@ function LoginFormContent() {
           </label>
 
           <label style={{ display: "grid", gap: "6px", fontSize: "13px", fontWeight: 600 }}>
+            Role
+            <select
+              value={requestedRole}
+              onChange={(e) => setRequestedRole(e.target.value)}
+              style={{ padding: "11px", borderRadius: "8px", border: "1px solid #dce7e6", fontSize: "13px" }}
+            >
+              <option value="CITIZEN">Citizen (Public / Family Safety)</option>
+              <option value="SHELTER_ADMIN">Shelter Administrator</option>
+              <option value="DISTRICT_AUTHORITY">District Authority</option>
+              <option value="SYSTEM_ADMIN">System Administrator</option>
+            </select>
+          </label>
+
+          <label style={{ display: "grid", gap: "6px", fontSize: "13px", fontWeight: 600 }}>
             District
             <select
               value={districtName}
@@ -266,10 +443,17 @@ function LoginFormContent() {
             />
           </label>
 
-          <div style={{ background: "#e9f7f4", padding: "10px 12px", borderRadius: "8px", fontSize: "12px", color: "#507376", lineHeight: 1.4 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#087d7a" strokeWidth="2" style={{ verticalAlign: "middle", marginRight: "6px" }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-            <strong>Registration Policy:</strong> Public registration creates a secure Citizen Safety account. Privileged responder & authority credentials are explicitly provisioned by System Administrators.
-          </div>
+          {requestedRole === "CITIZEN" ? (
+            <div style={{ background: "#e9f7f4", padding: "10px 12px", borderRadius: "8px", fontSize: "12px", color: "#507376", lineHeight: 1.4 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#087d7a" strokeWidth="2" style={{ verticalAlign: "middle", marginRight: "6px" }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              <strong>Registration Policy:</strong> Public registration creates a secure Citizen Safety account with immediate access to shelter discovery and safe registry.
+            </div>
+          ) : (
+            <div style={{ background: "#fff9eb", border: "1px solid #f2d28d", padding: "10px 12px", borderRadius: "8px", fontSize: "12px", color: "#8a6d13", lineHeight: 1.4 }}>
+              <span style={{ marginRight: "6px" }}>⚠️</span>
+              <strong>District Verification Policy:</strong> Privileged roles ({formatRoleName(requestedRole)}) require district verification before elevated permissions are activated.
+            </div>
+          )}
 
           <button
             type="submit"

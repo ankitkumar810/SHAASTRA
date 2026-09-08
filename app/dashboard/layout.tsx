@@ -56,7 +56,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
               Citizen Portal
             </Link>
 
-            {(userRole === "SHELTER_ADMIN" || userRole === "DISTRICT_AUTHORITY" || userRole === "SYSTEM_ADMIN") && (
+            {verificationStatus === "VERIFIED" && (userRole === "SHELTER_ADMIN" || userRole === "DISTRICT_AUTHORITY" || userRole === "SYSTEM_ADMIN") && (
               <Link
                 href="/dashboard/shelter"
                 style={{ padding: "6px 12px", borderRadius: "6px", fontSize: "13px", fontWeight: 600, textDecoration: "none", color: "#17323b" }}
@@ -65,7 +65,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
               </Link>
             )}
 
-            {(userRole === "DISTRICT_AUTHORITY" || userRole === "SYSTEM_ADMIN") && (
+            {verificationStatus === "VERIFIED" && (userRole === "DISTRICT_AUTHORITY" || userRole === "SYSTEM_ADMIN") && (
               <Link
                 href="/dashboard/authority"
                 style={{ padding: "6px 12px", borderRadius: "6px", fontSize: "13px", fontWeight: 600, textDecoration: "none", color: "#17323b" }}
@@ -74,7 +74,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
               </Link>
             )}
 
-            {userRole === "SYSTEM_ADMIN" && (
+            {verificationStatus === "VERIFIED" && userRole === "SYSTEM_ADMIN" && (
               <Link
                 href="/dashboard/admin"
                 style={{ padding: "6px 12px", borderRadius: "6px", fontSize: "13px", fontWeight: 600, textDecoration: "none", color: "#17323b" }}

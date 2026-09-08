@@ -18,8 +18,12 @@ export default async function ShelterAdminDashboardPage() {
     include: { shelter: true },
   });
 
-  // Strict Server-Side Guard: Only Shelter Admins, District Authorities, or System Admins
-  if (!profile || (profile.role !== "SHELTER_ADMIN" && profile.role !== "DISTRICT_AUTHORITY" && profile.role !== "SYSTEM_ADMIN")) {
+  // Strict Server-Side Guard: Only verified Shelter Admins, District Authorities, or System Admins
+  if (
+    !profile ||
+    profile.verificationStatus !== "VERIFIED" ||
+    (profile.role !== "SHELTER_ADMIN" && profile.role !== "DISTRICT_AUTHORITY" && profile.role !== "SYSTEM_ADMIN")
+  ) {
     redirect("/dashboard/citizen");
   }
 

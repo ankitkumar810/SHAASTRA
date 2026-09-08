@@ -18,7 +18,12 @@ export async function GET(request: Request) {
         fullName: data.user.user_metadata?.full_name || data.user.email?.split("@")[0] || "SHAASTRA User",
         requestedRole: data.user.user_metadata?.requested_role,
         districtId: data.user.user_metadata?.district_id,
+        districtName: data.user.user_metadata?.district_name,
       });
+
+      if (profile && profile.verificationStatus === "PENDING") {
+        return NextResponse.redirect(`${origin}/login?pendingRole=${encodeURIComponent(profile.role)}`);
+      }
 
       const redirectPath = profile ? getDashboardPathForRole(profile.role) : next;
       return NextResponse.redirect(`${origin}${redirectPath}`);

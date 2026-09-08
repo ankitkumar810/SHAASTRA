@@ -1,9 +1,28 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { getUserProfile } from "@/lib/services/auth";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function SystemAdminDashboardPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const profile = await getUserProfile(user.id);
+
+  // Strict Server-Side Guard: Only verified System Admins
+  if (!profile || profile.verificationStatus !== "VERIFIED" || profile.role !== "SYSTEM_ADMIN") {
+    redirect("/dashboard/citizen");
+  }
+
   let pendingProfiles: Array<{ id: string; fullName: string; role: string; email: string | null }> = [];
   let auditLogs: Array<{ id: string; action: string; entity: string; details: string | null; createdAt: Date }> = [];
 

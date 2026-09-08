@@ -56,6 +56,28 @@ enum ReconnectionStatus {
   REJECTED
 }
 
+// Phase 4 — GPS, Missing Persons, Incidents
+
+enum ConsentStatus {
+  GRANTED
+  REVOKED
+  EXPIRED
+}
+
+enum MissingPersonStatus {
+  MISSING
+  LOCATED
+  SAFE
+  REUNITED
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 model District {
   id              String           @id @default(cuid())
   name            String           @unique
@@ -65,6 +87,9 @@ model District {
   shelters        Shelter[]
   disasterReports DisasterReport[]
   alerts          Alert[]
+  // Phase 4
+  missingPersons  MissingPerson[]  @relation("DistrictMissingPersons")
+  incidents       Incident[]       @relation("DistrictIncidents")
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
@@ -104,6 +129,9 @@ model Profile {
   reconnectionRequests ReconnectionRequest[] @relation("UserReconnectionRequests")
   assignedAlerts       Alert[]              @relation("AssignedAlerts")
   auditLogs            AuditLog[]
+  // Phase 4
+  locationConsents     LocationConsent[]    @relation("UserLocationConsents")
+  missingPersonReports MissingPerson[]      @relation("UserMissingPersonReports")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -194,6 +222,11 @@ model SafeRecord {
   registeredById     String?
   registeredBy       Profile?             @relation("UserSafeRecords", fields: [registeredById], references: [id], onDelete: SetNull)
   reconnections      ReconnectionRequest[]
+  // Phase 4 — GPS check-in fields
+  latitude           Float?
+  longitude          Float?
+  accuracy           Float?
+  locationConsentId  String?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -201,6 +234,7 @@ model SafeRecord {
   @@index([shelterId])
   @@index([phone])
 }
+
 
 model ReconnectionRequest {
   id              String             @id @default(cuid())
@@ -237,6 +271,7 @@ model DisasterReport {
   longitude        Float?
   locationName     String
   evidenceUrl      String?
+  photoUrl         String?      // Phase 4 — camera capture (base64 data URL or storage URL)
   status           ReportStatus @default(RECEIVED)
   reviewedById     String?
   reviewedBy       Profile?     @relation("ReviewedReports", fields: [reviewedById], references: [id], onDelete: SetNull)
@@ -301,4 +336,79 @@ model AuditLog {
   @@index([userId])
   @@index([entity, entityId])
   @@index([createdAt])
+}
+
+// ─── Phase 4: GPS Consent, Missing Persons, Incidents ────────────────────────
+
+model LocationConsent {
+  id            String        @id @default(cuid())
+  userId        String
+  user          Profile       @relation("UserLocationConsents", fields: [userId], references: [id], onDelete: Cascade)
+  consentStatus ConsentStatus @default(GRANTED)
+  startedAt     DateTime      @default(now())
+  expiresAt     DateTime?     // null = keep sharing until manually revoked
+  revokedAt     DateTime?
+  latitude      Float
+  longitude     Float
+  accuracy      Float?
+  updatedAt     DateTime      @updatedAt
+
+  missingPersons MissingPerson[]
+
+  @@index([userId])
+  @@index([consentStatus])
+}
+
+model MissingPerson {
+  id                String              @id @default(cuid())
+  reportedById      String?
+  reportedBy        Profile?            @relation("UserMissingPersonReports", fields: [reportedById], references: [id], onDelete: SetNull)
+  name              String
+  photoUrl          String?
+  description       String?
+  lastSeenAt        DateTime?
+  lastSeenLatitude  Float?
+  lastSeenLongitude Float?
+  locationName      String?
+  contactName       String
+  contactPhone      String
+  status            MissingPersonStatus @default(MISSING)
+  districtId        String?
+  district          District?           @relation("DistrictMissingPersons", fields: [districtId], references: [id], onDelete: SetNull)
+  locationConsentId String?             // FK → active LocationConsent if person shares live location
+  locationConsent   LocationConsent?    @relation(fields: [locationConsentId], references: [id], onDelete: SetNull)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([name])
+  @@index([status])
+  @@index([districtId])
+}
+
+model Incident {
+  id              String           @id @default(cuid())
+  title           String
+  hazardType      String
+  country         String           @default("India")
+  state           String
+  districtId      String?
+  district        District?        @relation("DistrictIncidents", fields: [districtId], references: [id], onDelete: SetNull)
+  source          String           // e.g. "Reuters", "NDMA", "Case Study", "ASDMA"
+  sourceUrl       String?
+  capXmlUrl       String?          // Future: CAP/RSS ingestion URL for SACHET integration
+  sourceUpdatedAt DateTime?
+  isLive          Boolean          @default(false)
+  severity        IncidentSeverity @default(HIGH)
+  latitude        Float?
+  longitude       Float?
+  summary         String
+  validFrom       DateTime?
+  validUntil      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([hazardType])
+  @@index([isLive])
+  @@index([severity])
+  @@index([districtId])
 }

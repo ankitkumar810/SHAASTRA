@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     const profile = await getUserProfile(user.id);
-    if (!profile || profile.role === "CITIZEN") {
-      return NextResponse.json({ success: false, error: "Forbidden: Operational predictions are restricted to authorities and shelter managers." }, { status: 403 });
+    if (!profile || profile.verificationStatus !== "VERIFIED" || profile.role === "CITIZEN") {
+      return NextResponse.json({ success: false, error: "Forbidden: Operational predictions are restricted to verified authorities and shelter managers." }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);

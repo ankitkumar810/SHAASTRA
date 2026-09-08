@@ -74,8 +74,12 @@ export async function POST(request: NextRequest) {
     }
 
     const profile = await getUserProfile(user.id);
-    if (!profile || (profile.role !== "DISTRICT_AUTHORITY" && profile.role !== "SYSTEM_ADMIN")) {
-      return NextResponse.json({ success: false, error: "Forbidden: Requires District Authority or System Admin" }, { status: 403 });
+    if (
+      !profile ||
+      profile.verificationStatus !== "VERIFIED" ||
+      (profile.role !== "DISTRICT_AUTHORITY" && profile.role !== "SYSTEM_ADMIN")
+    ) {
+      return NextResponse.json({ success: false, error: "Forbidden: Requires verified District Authority or System Admin" }, { status: 403 });
     }
 
     const body = await request.json();

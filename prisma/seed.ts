@@ -228,6 +228,57 @@ async function main() {
     });
   }
 
+  // 6. Seed Case Study Incidents (Nepal + Assam 2026 floods)
+  // IMPORTANT: These are historical/educational case studies only.
+  // isLive: false. No fabricated live government data.
+  console.log("Seeding case study incidents...");
+
+  await prisma.incident.upsert({
+    where: { id: "case-study-nepal-2026" },
+    update: {},
+    create: {
+      id: "case-study-nepal-2026",
+      title: "Nepal Koshi River Basin Flood 2026",
+      hazardType: "Flood",
+      country: "Nepal",
+      state: "Province No. 1 / Madhesh",
+      source: "Reuters / UN OCHA Situation Report",
+      sourceUrl: "https://reliefweb.int",
+      sourceUpdatedAt: new Date("2026-08-15"),
+      isLive: false,
+      severity: "CRITICAL",
+      latitude: 26.8,
+      longitude: 87.2,
+      summary:
+        "Severe monsoon flooding across the Koshi river basin caused extensive displacement affecting an estimated 85,000 people across eastern Nepal. Flash floods and landslides disrupted major highways and severed communication links. Over 3,200 households were directly impacted. NDRF and Nepal Army mounted rescue operations. This is a case study for training and preparedness purposes.",
+      validFrom: new Date("2026-07-12"),
+      validUntil: new Date("2026-09-30"),
+    },
+  });
+
+  await prisma.incident.upsert({
+    where: { id: "case-study-assam-2026" },
+    update: {},
+    create: {
+      id: "case-study-assam-2026",
+      title: "Assam Brahmaputra Valley Flood 2026",
+      hazardType: "Flood",
+      country: "India",
+      state: "Assam",
+      source: "ASDMA / Indian Express / NDMA",
+      sourceUrl: "https://asdma.assam.gov.in",
+      sourceUpdatedAt: new Date("2026-08-20"),
+      isLive: false,
+      severity: "HIGH",
+      latitude: 26.2,
+      longitude: 92.0,
+      summary:
+        "Brahmaputra and Barak river systems breached embankments in 28 districts of Assam during the 2026 monsoon season. Over 2.1 million people were affected across more than 3,700 villages. Relief camps were established by ASDMA in collaboration with district administrations. NDRF teams deployed for rescue operations. This is a documented case study for disaster response training and system demonstration purposes.",
+      validFrom: new Date("2026-06-18"),
+      validUntil: new Date("2026-10-15"),
+    },
+  });
+
   console.log("Seeding completed successfully.");
 }
 

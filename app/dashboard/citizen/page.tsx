@@ -79,6 +79,15 @@ export default async function CitizenDashboardPage() {
           </Link>
         </div>
 
+        <div style={{ background: "white", border: "1px solid #dce7e6", borderTop: "4px solid #2563eb", borderRadius: "10px", padding: "20px" }}>
+          <span style={{ fontSize: "24px" }}>📍</span>
+          <h3 style={{ font: "600 16px Outfit", margin: "10px 0 4px" }}>GPS Safety Check-in</h3>
+          <p style={{ fontSize: "13px", color: "#71858a", margin: 0 }}>Share your location with relief teams so help can find you.</p>
+          <Link href="/dashboard/citizen/safety-checkin" style={{ display: "inline-block", marginTop: "12px", color: "#087d7a", fontWeight: 600, fontSize: "13px", textDecoration: "none" }}>
+            Check In Now →
+          </Link>
+        </div>
+
         <div style={{ background: "white", border: "1px solid #dce7e6", borderTop: "4px solid #e89d2e", borderRadius: "10px", padding: "20px" }}>
           <span style={{ fontSize: "24px" }}>♡</span>
           <h3 style={{ font: "600 16px Outfit", margin: "10px 0 4px" }}>Family Reconnection</h3>
@@ -88,15 +97,34 @@ export default async function CitizenDashboardPage() {
           </Link>
         </div>
 
+        <div style={{ background: "white", border: "1px solid #dce7e6", borderTop: "4px solid #D94B3D", borderRadius: "10px", padding: "20px" }}>
+          <span style={{ fontSize: "24px" }}>🔍</span>
+          <h3 style={{ font: "600 16px Outfit", margin: "10px 0 4px" }}>Missing Person Report</h3>
+          <p style={{ fontSize: "13px", color: "#71858a", margin: 0 }}>Report a missing person or check the status of reported cases.</p>
+          <Link href="/dashboard/citizen/missing-persons" style={{ display: "inline-block", marginTop: "12px", color: "#087d7a", fontWeight: 600, fontSize: "13px", textDecoration: "none" }}>
+            Report / Search →
+          </Link>
+        </div>
+
         <div style={{ background: "white", border: "1px solid #dce7e6", borderTop: "4px solid #df6957", borderRadius: "10px", padding: "20px" }}>
-          <span style={{ fontSize: "24px" }}>⚑</span>
-          <h3 style={{ font: "600 16px Outfit", margin: "10px 0 4px" }}>Report Disaster Hazard</h3>
-          <p style={{ fontSize: "13px", color: "#71858a", margin: 0 }}>Submit a location-aware report for flooding or blocked roads.</p>
-          <span style={{ display: "inline-block", marginTop: "12px", color: "#087d7a", fontWeight: 600, fontSize: "13px" }}>
+          <span style={{ fontSize: "24px" }}>📷</span>
+          <h3 style={{ font: "600 16px Outfit", margin: "10px 0 4px" }}>Report Hazard</h3>
+          <p style={{ fontSize: "13px", color: "#71858a", margin: 0 }}>Photo-report flooding, road blockage, or emergencies with GPS.</p>
+          <Link href="/dashboard/citizen/report-hazard" style={{ display: "inline-block", marginTop: "12px", color: "#087d7a", fontWeight: 600, fontSize: "13px", textDecoration: "none" }}>
             Submit Report →
-          </span>
+          </Link>
+        </div>
+
+        <div style={{ background: "white", border: "1px solid #dce7e6", borderTop: "4px solid #087d7a", borderRadius: "10px", padding: "20px" }}>
+          <span style={{ fontSize: "24px" }}>⚑</span>
+          <h3 style={{ font: "600 16px Outfit", margin: "10px 0 4px" }}>Emergency Alerts</h3>
+          <p style={{ fontSize: "13px", color: "#71858a", margin: 0 }}>View active district-level warnings and evacuation notices.</p>
+          <Link href="/dashboard/citizen" style={{ display: "inline-block", marginTop: "12px", color: "#087d7a", fontWeight: 600, fontSize: "13px", textDecoration: "none" }}>
+            View Alerts →
+          </Link>
         </div>
       </div>
+
 
       <div style={{ background: "white", border: "1px solid #dce7e6", borderRadius: "12px", padding: "24px" }}>
         <h2 style={{ font: "700 20px Outfit", margin: "0 0 16px", color: "#17323b" }}>Verified Relief Shelters Nearby</h2>

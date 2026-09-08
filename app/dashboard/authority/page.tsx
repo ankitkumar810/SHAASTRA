@@ -1,23 +1,118 @@
 import { prisma } from "@/lib/prisma";
 import { evaluateShelterPredictions } from "@/lib/services/prediction";
 import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { getUserProfile } from "@/lib/services/auth";
+import { redirect } from "next/navigation";
+import { CommandMapClient } from "@/components/CommandMapClient";
+import type { IncidentMarker, MissingPersonMapMarker, HazardReportMarker, SafeCheckinMarker } from "@/components/ShelterMap";
 
 export const dynamic = "force-dynamic";
 
 export default async function DistrictAuthorityDashboardPage() {
-  let shelters: Array<{ id: string; name: string; totalBeds: number; availableBeds: number }> = [];
-  let alerts: Array<{ id: string; icon: string; title: string; description: string }> = [];
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const profile = await getUserProfile(user.id);
+
+  // Strict Server-Side Guard: Only verified District Authorities or System Admins
+  if (
+    !profile ||
+    profile.verificationStatus !== "VERIFIED" ||
+    (profile.role !== "DISTRICT_AUTHORITY" && profile.role !== "SYSTEM_ADMIN")
+  ) {
+    redirect("/dashboard/citizen");
+  }
+
+  let shelters: Array<{ id: string; name: string; locality: string; totalBeds: number; availableBeds: number; latitude: number | null; longitude: number | null; status: string }> = [];
+  let alerts: Array<{ id: string; icon: string; title: string; description: string; severity: string }> = [];
   let safeCount = 2184;
   let predictionSummary = null;
+  let incidents: IncidentMarker[] = [];
+  let missingPersons: MissingPersonMapMarker[] = [];
+  let hazardReports: HazardReportMarker[] = [];
+  let safeCheckins: SafeCheckinMarker[] = [];
 
   try {
     shelters = await prisma.shelter.findMany();
     alerts = await prisma.alert.findMany({ take: 5, orderBy: { createdAt: "desc" } });
     safeCount = await prisma.safeRecord.count();
     predictionSummary = await evaluateShelterPredictions();
+
+    // Phase 4 — Command Centre data
+    const rawIncidents = await prisma.incident.findMany({ orderBy: { createdAt: "desc" }, take: 20 });
+    incidents = rawIncidents
+      .filter((i) => i.latitude !== null && i.longitude !== null)
+      .map((i) => ({
+        id: i.id,
+        title: i.title,
+        hazardType: i.hazardType,
+        severity: i.severity,
+        latitude: i.latitude!,
+        longitude: i.longitude!,
+        summary: i.summary,
+        isLive: i.isLive,
+        source: i.source,
+        state: i.state,
+      }));
+
+    const rawMissing = await prisma.missingPerson.findMany({
+      where: { status: { in: ["MISSING", "LOCATED"] } },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+    });
+    missingPersons = rawMissing
+      .filter((p) => p.lastSeenLatitude !== null && p.lastSeenLongitude !== null)
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        status: p.status,
+        locationName: p.locationName,
+        lastSeenLatitude: p.lastSeenLatitude!,
+        lastSeenLongitude: p.lastSeenLongitude!,
+        lastSeenAt: p.lastSeenAt,
+      }));
+
+    const rawReports = await prisma.disasterReport.findMany({
+      where: { status: { in: ["RECEIVED", "REVIEWED"] } },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+    hazardReports = rawReports
+      .filter((r) => r.latitude !== null && r.longitude !== null)
+      .map((r) => ({
+        id: r.id,
+        hazardType: r.hazardType,
+        locationName: r.locationName,
+        latitude: r.latitude!,
+        longitude: r.longitude!,
+        createdAt: r.createdAt,
+      }));
+
+    // Safe check-ins (approximate — authority view; precise coords from LocationConsent)
+    const rawCheckins = await prisma.locationConsent.findMany({
+      where: { consentStatus: "GRANTED" },
+      orderBy: { updatedAt: "desc" },
+      take: 100,
+      include: { user: { select: { fullName: true } } },
+    });
+    safeCheckins = rawCheckins.map((c) => ({
+      id: c.id,
+      fullName: c.user.fullName,
+      latitude: c.latitude,
+      longitude: c.longitude,
+      createdAt: c.startedAt,
+    }));
   } catch (err) {
     console.error("Error fetching authority metrics:", err);
   }
+
 
   const activeSheltersCount = shelters.length || 14;
   const totalBeds = shelters.reduce((acc, s) => acc + s.totalBeds, 0) || 1534;
@@ -201,6 +296,67 @@ export default async function DistrictAuthorityDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ── Command Centre Map ── */}
+      <div style={{ background: "white", border: "1px solid #dce7e6", borderRadius: "14px", padding: "24px", marginBottom: "28px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <span style={{ color: "#087d7a", font: "700 11px 'DM Sans'", letterSpacing: "1.5px", textTransform: "uppercase" }}>
+              PHASE 4 — COMMAND CENTRE
+            </span>
+            <h2 style={{ font: "700 22px Outfit", margin: "4px 0 2px", color: "#17323b" }}>
+              District Situational Map
+            </h2>
+            <p style={{ fontSize: "13px", color: "#71858a", margin: 0 }}>
+              All operational layers — shelters, alerts, incidents, missing persons, hazard reports, and live check-ins.
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <span style={{ background: "#fee8e4", color: "#b64b3d", padding: "5px 10px", borderRadius: "8px", font: "700 11px 'DM Sans'" }}>
+              🌊 {incidents.length} Incidents
+            </span>
+            <span style={{ background: "#fff1d9", color: "#aa6a13", padding: "5px 10px", borderRadius: "8px", font: "700 11px 'DM Sans'" }}>
+              🔍 {missingPersons.length} Missing
+            </span>
+            <span style={{ background: "#e2f6ed", color: "#087b68", padding: "5px 10px", borderRadius: "8px", font: "700 11px 'DM Sans'" }}>
+              📡 {safeCheckins.length} Check-ins
+            </span>
+            <span style={{ background: "#f0f4f4", color: "#71858a", padding: "5px 10px", borderRadius: "8px", font: "700 11px 'DM Sans'" }}>
+              📷 {hazardReports.length} Reports
+            </span>
+          </div>
+        </div>
+
+        {/* Case study notice */}
+        {incidents.some((i) => !i.isLive) && (
+          <div style={{ background: "#f8f9fa", border: "1px solid #e0e0e0", borderRadius: "8px", padding: "8px 14px", marginBottom: "14px", fontSize: "12px", color: "#6b7280", display: "flex", gap: "8px", alignItems: "center" }}>
+            <span>📋</span>
+            <span>
+              <strong>Case Study incidents</strong> (grey markers) are historical/educational records — not live emergencies.
+              Source-verified. No live government integration claimed.
+            </span>
+          </div>
+        )}
+
+        <div style={{ height: "520px" }}>
+          <CommandMapClient
+            shelters={shelters.map((s) => ({
+              id: s.id,
+              name: s.name,
+              locality: s.locality ?? "",
+              availableBeds: s.availableBeds,
+              status: s.status,
+              latitude: s.latitude ?? null,
+              longitude: s.longitude ?? null,
+            }))}
+            incidents={incidents}
+            missingPersons={missingPersons}
+            hazardReports={hazardReports}
+            safeCheckins={safeCheckins}
+            showLayerToggles={true}
+          />
+        </div>
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
         <div style={{ background: "white", border: "1px solid #dce7e6", borderRadius: "12px", padding: "22px" }}>

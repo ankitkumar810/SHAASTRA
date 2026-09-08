@@ -8,20 +8,40 @@ export interface CreateProfileInput {
   phone?: string | null;
   requestedRole?: Role | string;
   districtId?: string | null;
+  districtName?: string | null;
   shelterId?: string | null;
 }
 
 /**
  * SERVER-SIDE ROLE SECURITY SANITIZATION
- * Public signups are strictly forced to CITIZEN role with VERIFIED status.
- * SYSTEM_ADMIN and DISTRICT_AUTHORITY roles CANNOT be self-assigned under any circumstances.
+ * Citizens receive VERIFIED status immediately upon registration.
+ * Privileged roles (SHELTER_ADMIN, DISTRICT_AUTHORITY, SYSTEM_ADMIN) are registered with
+ * PENDING verification status, requiring district/administrator verification before activation.
  */
 export function sanitizeRole(requestedRole?: string): { role: Role; verificationStatus: VerificationStatus } {
-  // Always enforce CITIZEN for public signups. Privileged roles cannot be self-requested.
-  return {
-    role: "CITIZEN" as Role,
-    verificationStatus: "VERIFIED" as VerificationStatus,
-  };
+  switch (requestedRole) {
+    case "SHELTER_ADMIN":
+      return {
+        role: "SHELTER_ADMIN" as Role,
+        verificationStatus: "PENDING" as VerificationStatus,
+      };
+    case "DISTRICT_AUTHORITY":
+      return {
+        role: "DISTRICT_AUTHORITY" as Role,
+        verificationStatus: "PENDING" as VerificationStatus,
+      };
+    case "SYSTEM_ADMIN":
+      return {
+        role: "SYSTEM_ADMIN" as Role,
+        verificationStatus: "PENDING" as VerificationStatus,
+      };
+    case "CITIZEN":
+    default:
+      return {
+        role: "CITIZEN" as Role,
+        verificationStatus: "VERIFIED" as VerificationStatus,
+      };
+  }
 }
 
 export async function getUserProfile(userId: string) {
@@ -48,8 +68,9 @@ export async function getUserProfile(userId: string) {
         id: user.id,
         email: user.email,
         fullName: user.user_metadata?.full_name || user.email?.split("@")[0] || "SHAASTRA User",
-        requestedRole: "CITIZEN", // Strictly enforce CITIZEN for public registrations
+        requestedRole: user.user_metadata?.requested_role || "CITIZEN",
         districtId: user.user_metadata?.district_id,
+        districtName: user.user_metadata?.district_name,
       });
 
       if (synced) {
@@ -73,10 +94,25 @@ export async function syncUserProfile(input: CreateProfileInput) {
 
     const existing = await prisma.profile.findUnique({
       where: { id: input.id },
+      include: {
+        district: true,
+        shelter: true,
+      },
     });
 
     if (existing) {
       return existing;
+    }
+
+    // Resolve districtId by districtName if districtId is not directly provided
+    let resolvedDistrictId = input.districtId;
+    if (!resolvedDistrictId && input.districtName) {
+      const dist = await prisma.district.findFirst({
+        where: { name: { equals: input.districtName, mode: "insensitive" } },
+      });
+      if (dist) {
+        resolvedDistrictId = dist.id;
+      }
     }
 
     return await prisma.profile.create({
@@ -87,8 +123,12 @@ export async function syncUserProfile(input: CreateProfileInput) {
         phone: input.phone || undefined,
         role: role,
         verificationStatus: verificationStatus,
-        districtId: input.districtId || undefined,
+        districtId: resolvedDistrictId || undefined,
         shelterId: input.shelterId || undefined,
+      },
+      include: {
+        district: true,
+        shelter: true,
       },
     });
   } catch (error) {

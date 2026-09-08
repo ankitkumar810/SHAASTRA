@@ -52,8 +52,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     const profile = await getUserProfile(user.id);
-    if (!profile) {
-      return NextResponse.json({ success: false, error: "User profile not found" }, { status: 403 });
+    if (!profile || profile.verificationStatus !== "VERIFIED") {
+      return NextResponse.json({ success: false, error: "Forbidden: Verified operational account required" }, { status: 403 });
     }
 
     // Role Ownership Guard: Shelter Admin can ONLY modify their assigned shelter
